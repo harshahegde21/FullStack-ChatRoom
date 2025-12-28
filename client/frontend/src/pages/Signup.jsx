@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Loginpage from "./Loginpage.jsx";
 import { useReducer,useContext } from "react";
 import { UserContext } from "../context/UserProvider.jsx";
+import {setUsertoLocalStorage } from "../utils/LocalStroageSetup.js"
 const Signup = () => {
   const {setuserData} = useContext(UserContext);
   const initialStates = {
@@ -56,6 +57,8 @@ const Signup = () => {
   const handleForm = async (e) => {
     e.preventDefault();
     console.log("form Data", state);
+    setUsertoLocalStorage(state)
+    
     try {
       if (isValidDatas()) {
         const user = {

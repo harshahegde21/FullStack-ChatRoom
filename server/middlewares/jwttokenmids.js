@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 dotenv.config();
 const generateToken = (user) => {
@@ -6,6 +6,8 @@ const generateToken = (user) => {
     username: user.username,
     email:user.email,
   };
+  console.log("payload",payload);
+  
 
   return jwt.sign(payload, process.env.SECRET_KEY);
   

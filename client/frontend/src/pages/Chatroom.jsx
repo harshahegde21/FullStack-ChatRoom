@@ -1,84 +1,71 @@
+
+// import React from "react";
+// import { useState ,useEffect} from "react";
+// import socket from "../socket/socket";
+// const Chatroom = () => {
+//   const [roomDetails, setroomDetails] = useState();
+//   const [leaderData,setLeaderdata] = useState([]);
+
+
+//   useEffect(()=>{
+//     socket.on("room-creator-data",(data)=>{
+//     setLeaderdata(data)
+//     console.log(data);
+    
+//     })
+
+//    return()=>{
+//     socket.off("room-creator-data");
+//    }
+
+//   },[])
+//   return <div className="room-div">
+//     <div className="room-pannel">
+//       <b>{leaderData[0]?.username}</b>
+//     </div>
+
+//   </div>;
+// };
+// export default Chatroom;
+
 import React, { useEffect, useState } from "react";
 import socket from "../socket/socket.js";
-import axios from "axios";
 
 const Chatroom = () => {
-  const [currcreatorRoom, setcurrcreatorRoom] = useState(null);
-  const [joinersData, setjoinersData] = useState([]);  
+  const [leader, setLeader] = useState(null);
+  const [roomname,setRoomname] = useState("")
+  const roomCode = localStorage.getItem("currentRoomId");
 
-  const [isCreated, setisCreated] = useState(false);
-  const [isJoined, setisJoined] = useState(false);
-
-  // Socket listeners
   useEffect(() => {
-    socket.on("room-creator-data", (userData) => {
-      setcurrcreatorRoom(userData);
-      setisCreated(true);
-      setisJoined(false);
-    });
+    if (!roomCode) return;
 
-    socket.on("room-joiner-data", (userData) => {
-      setjoinersData((prev) => [...prev, userData]);
-      setisJoined(true);
-    });
+    // // Join the room on server-side
+    socket.emit("join-room-info", { roomCode });
 
-    return () => {
-      socket.off("room-creator-data");
-      socket.off("room-joiner-data");
-    };
-  }, []);
+    const handleLeader = (data) =>{
+      const users = data.users[0];
+      console.log(users);
+      const roomname = data.roomname
+      console.log(roomname);
+      
+      setRoomname(roomname);
+      setLeader(users);
+    }
+    socket.on("room-creator-data", handleLeader);
 
-  // Fetch on refresh
-  useEffect(() => {
-    const getAllUsersfromBackend = async () => {
-      try {
-        const response = await axios.get("http://localhost:3021/app/getusers", {
-          withCredentials: true,
-        });
-        const data = response.data; // array of objects
-        console.log("Users from backend:", data);
-
-        const roomleader = data.find((user) => user.role === "room-creator"); //I will directly get object here
-        if (roomleader) {
-          setcurrcreatorRoom(roomleader);
-          setisCreated(true);
-        }
-
-        const roomjoiners = data.filter((user) => user.role === "room-user");
-        if (roomjoiners.length > 0) {
-          setjoinersData(roomjoiners);
-          setisJoined(true);
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err);
-      }
-    };
-    getAllUsersfromBackend();
-  }, []);
+    return () => socket.off("room-creator-data", handleLeader);
+  }, [roomCode]);
 
   return (
-    <div className="flex bg-amber-100 p-4">
-      <div className="bg-yellow-50 p-4 rounded w-80">
-        {currcreatorRoom && isCreated && (
-          <div className="creator-div mb-4">
-            <p>Room: {currcreatorRoom.roomname || "No information"}</p>
-            <p>Room Leader: {currcreatorRoom.username || "No information"}</p>
-          </div>
-        )}
-
-        {isJoined && joinersData.length > 0 && (
-          <div className="joiners-div">
-            <p className="font-bold">Room Members</p>
-            <ul>
-              {joinersData.map((user, index) => (
-                <li key={index}>{user.username}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+    <div className="p-4 flex flex-col items-center justify-center h-full bg-gray-100">
+      <div className="w-full md:w-1/2 bg-white p-4 rounded shadow-md">
+        <h2 className="text-xl mb-4 font-bold">Room Leader</h2>
+        <p className="text-lg">{leader?.username || "Loading..."}</p>
+        <p className="text-lg">{roomname || "Loading..."}</p>
       </div>
     </div>
   );
 };
 
 export default Chatroom;
+

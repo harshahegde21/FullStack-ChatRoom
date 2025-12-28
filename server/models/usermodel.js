@@ -14,5 +14,5 @@ const userSchema = mongoose.Schema({
         required:true
     }
 });
-const RoomUsers = mongoose.model("chatroomusers",userSchema);
-export default RoomUsers;
+const Users = mongoose.model("chatapp-users",userSchema);
+export default Users;
