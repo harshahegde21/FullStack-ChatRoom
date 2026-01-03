@@ -118,7 +118,7 @@ import cookieParser from "cookie-parser";
 import crypto from "crypto";
 import router from "./router/router.js";
 import { buildConnection } from "./db/dbconnection.js";
-import { addRoomUsers, addMessagesToDB, getParticularRoomMessage, getAlltheUsers } from "./controllers/roomcontroller.js";
+import { addRoomUsers, addMessagesToDB, getParticularRoomMessage, getAlltheUsers,endRoom } from "./controllers/roomcontroller.js";
 
 dotenv.config();
 const app = express();
@@ -182,12 +182,49 @@ io.on("connection", socket => {
     io.emit("users-data", roomsData); // update everyone with room data
   });
 
+  socket.on("room-code-to-set-IDs",(roomdata)=>{
+    const roomId = roomdata.roomId;
+    const roomCode = roomdata.roomCode;
+    io.to(roomId).emit("")
+    
+  })
+
   // Get chat messages
-  socket.on("chat-message", async (msgObj) => {
-    await addMessagesToDB(msgObj);
-    const msgs = await getParticularRoomMessage(msgObj.roomname);
-    io.to(msgObj.roomId).emit("room-messages", msgs);
+  socket.on("send-message", async (msgObj) => {
+    
+    // addMessagesToDB(msgObj);
+    console.log(msgObj);
+    
+    const room = roomsData[msgObj.roomCode]
+    const roomId = room.roomId;
+    console.log(room+roomId);
+    
+    const newMsgobj = {
+      roomId:roomId,text:msgObj.text,sender:msgObj.sender,time:msgObj.time
+    }
+    addMessagesToDB(newMsgobj);
+    
+    const msgs = await getParticularRoomMessage(roomId);
+    console.log(msgs);
+    
+    io.to(roomId).emit("room-messages", msgs);
   });
+
+  // ending the currently created room
+  socket.on("end-room",(roomCode)=>{
+    const room = roomsData[roomCode]
+    if(room){
+      // call the delete that room data from room details and messages
+      let isDeleted = endRoom(room.roomId)
+      // emit the isDeleted true or false
+      socket.emit("room-deleted",isDeleted)
+      
+    }
+    else{
+      // emit event of invalid room code
+    }
+    
+  })
 });
 
 server.listen(process.env.PORT, () => console.log("Server running on port", process.env.PORT));

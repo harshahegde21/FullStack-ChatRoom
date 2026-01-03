@@ -21,10 +21,10 @@ const addRoomUsers = async (username,socketId, roomname,roomId, role) => {
 
 // add chatobject to db
 const addMessagesToDB = (msgObj)=>{
-  const {roomname,text,sender,time} = msgObj;
+  const {roomId,text,sender,time} = msgObj;
   try {
     const result = Messages.create({
-      roomname,
+      roomId,
       text,
       sender,
       time
@@ -52,12 +52,21 @@ const getAlltheUsers = async (roomId) => {
 // get the saved messages
 const getParticularRoomMessage = async(roomId)=>{
   const result = await Messages.find({roomId})
+  console.log(result);
+  console.log("these are msgs");
   return result;
+}
+
+const endRoom =async (roomId)=>{
+  const deltedRoomdetails = await RoomDetails.findAndDelete({roomId});
+  if(deltedRoomdetails) return true
+  else return false
 }
 
 export {
   getAlltheUsers,
   addRoomUsers,
   addMessagesToDB,
-  getParticularRoomMessage
+  getParticularRoomMessage,
+  endRoom
 };

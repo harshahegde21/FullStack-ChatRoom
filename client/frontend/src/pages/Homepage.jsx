@@ -181,8 +181,13 @@ const Homepage = () => {
   }, []);
 
   useEffect(() => {
-    const handleRooms = (rooms) => setAllRooms(rooms);
+    const handleRooms = (rooms) => {
+      console.log("to"+rooms);
+      
+      setAllRooms(rooms);
+    }
     socket.on("users-data", handleRooms);
+    
     return () => socket.off("users-data", handleRooms);
   }, []);
 
@@ -198,7 +203,8 @@ const Homepage = () => {
     if (!roomName) return;
     const roomCode = generateRoomCode();
     socket.emit("create-room", { username: loggedUser.username, room: roomName, roomCode });
-    localStorage.setItem("currentRoomId", roomCode);
+    localStorage.setItem("roomname", roomName);
+    localStorage.setItem("roomCode",roomCode)
     navigate("/chatroom");
   };
 
@@ -206,6 +212,8 @@ const Homepage = () => {
     const roomCode = prompt("Enter 6-digit room code:");
     if (!roomCode) return;
     const room = allRooms[roomCode];
+    console.log(allRooms);
+    
     if (!room) return alert("Room does not exist");
     socket.emit("join-room", { username: loggedUser.username, roomId: room.roomId, roomCode });
     localStorage.setItem("currentRoomId", roomCode);

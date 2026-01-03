@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "npm start",
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "author": "Harsha Hegde",
   "license": "ISC",

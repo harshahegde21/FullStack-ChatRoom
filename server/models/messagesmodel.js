@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const messageSchema = mongoose.Schema({
-    roomname:{
+    roomId:{
         type:String,
         required:true
     },
